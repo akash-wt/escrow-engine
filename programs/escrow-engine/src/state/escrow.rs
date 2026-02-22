@@ -1,5 +1,7 @@
 use anchor_lang::prelude::*;
 
+//  intSpace help us to calculate escrow struct
+
 #[account]
 #[derive(InitSpace)]
 pub struct Escrow {
@@ -22,7 +24,7 @@ pub struct Escrow {
 }
 
 impl Escrow {
-    pub const LEN: usize = 8 + Escrow::INIT_SPACE;
+    pub const LEN: usize = Escrow::INIT_SPACE;
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Eq, InitSpace)]

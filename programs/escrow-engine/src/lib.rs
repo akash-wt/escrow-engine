@@ -1,8 +1,9 @@
 use anchor_lang::prelude::*;
+use instructions::*;
 
-pub mod  state;
 pub mod error;
 pub mod instructions;
+pub mod state;
 
 declare_id!("7Brc92uzycCySEN6Ma6G7qFRapDTkSiw7HZG2roqq2nb");
 
@@ -10,9 +11,11 @@ declare_id!("7Brc92uzycCySEN6Ma6G7qFRapDTkSiw7HZG2roqq2nb");
 pub mod escrow_engine {
     use super::*;
 
-    pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
-        msg!("Greetings from: {:?}", ctx.program_id);
-        Ok(())
+    pub fn initialize_escrow(
+        ctx: Context<InitializeEscrow>,
+        escrow_id: i64
+        ) -> Result<()> {
+        instructions::InitializeEscrow::handler()
     }
 }
 
