@@ -12,12 +12,12 @@ pub mod escrow_engine {
     use super::*;
 
     pub fn initialize_escrow(
-        ctx: Context<InitializeEscrow>,
-        escrow_id: i64
-        ) -> Result<()> {
-        instructions::InitializeEscrow::handler()
+        ctx: Context<InitializeEscrow>, 
+        escrow_id: u64) 
+        -> Result<()> 
+        {
+        instructions::init_escrow::handler(ctx,escrow_id);
+        Ok(())
     }
 }
 
-#[derive(Accounts)]
-pub struct Initialize {}
