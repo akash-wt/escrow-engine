@@ -1,8 +1,8 @@
-use crate::{error::ErrorCode, state::Escrow};
+use crate::state::{Escrow, EscrowStatus};
 use anchor_lang::prelude::*;
 
 #[derive(Accounts)]
-#[instruction(escorw_id:u64)]
+#[instruction(escrow_id:u64)]
 pub struct InitializeEscrow<'info> {
     #[account(mut)]
     pub maker: Signer<'info>,
@@ -13,7 +13,7 @@ pub struct InitializeEscrow<'info> {
         seeds=[
             b"escrow",
             maker.key().as_ref(),
-            &escorw_id.to_le_bytes()
+            &escrow_id.to_le_bytes()
             ],
             bump
     )]
@@ -22,5 +22,17 @@ pub struct InitializeEscrow<'info> {
 }
 
 pub fn handler(ctx: Context<InitializeEscrow>, escrow_id: u64) -> Result<()> {
+    let escrow = &mut ctx.accounts.escrow;
+
+    escrow.maker = ctx.accounts.maker.key();
+    escrow.reciver = Pubkey::default(); // it will be passed
+    escrow.mint = None;
+    escrow.amount = 0;
+    escrow.deadline = 0;
+    escrow.escrow_id = escrow_id;
+    escrow.bump = ctx.bumps.escrow;
+    escrow.status = EscrowStatus::Created;
+
+    msg!("account creted succussfully!");
     Ok(())
 }
