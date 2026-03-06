@@ -11,8 +11,8 @@ pub struct Escrow {
     pub reciver: Pubkey,
     // token or  native sol
     pub mint: Option<Pubkey>, // None = Native SOL
-    // amount of escrow
-    pub amount: u64,
+    // always in lamport. 
+    pub amount: u64,  
     // deadline of escorw
     pub deadline: i64,
     // escrow id

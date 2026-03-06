@@ -43,7 +43,7 @@ pub fn handler(
     require!(deadline>current_time,ErrorCode::InvalidDeadline);
 
     escrow.maker = ctx.accounts.maker.key();
-    escrow.reciver = reciver; // it will be passed
+    escrow.reciver = reciver; 
     escrow.mint =mint;
     escrow.amount = amount;
     escrow.deadline = deadline;
