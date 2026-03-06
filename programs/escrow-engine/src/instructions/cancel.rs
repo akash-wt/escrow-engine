@@ -8,7 +8,6 @@ pub struct Cancel<'info> {
     pub maker: Signer<'info>,
     #[account(
        mut,
-       close=maker,
         seeds=[
             b"escrow",
             maker.key().as_ref(),
@@ -41,20 +40,12 @@ pub fn handler(ctx: Context<Cancel>) -> Result<()> {
         &ctx.accounts.maker.key(),
         escrow.amount,
     );
-    anchor_lang::solana_program::program::invoke_signed(
-        &ix,
-        &[
-            escrow.to_account_info(),
-            ctx.accounts.maker.to_account_info(),
-        ],
-        &[&[
-            b"escrow",
-            escrow.maker.as_ref(),
-            &escrow.escrow_id.to_le_bytes(),
-            &[escrow.bump],
-        ]],
-    )?;
 
+    let escrow_info = escrow.to_account_info();
+    let maker_info = ctx.accounts.maker.to_account_info();
+
+    **escrow_info.try_borrow_mut_lamports()? -= escrow.amount;
+    **maker_info.try_borrow_mut_lamports()? += escrow.amount;
     escrow.status = EscrowStatus::Cancelled;
 
     Ok(())
