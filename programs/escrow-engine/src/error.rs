@@ -1,8 +1,10 @@
 use anchor_lang::prelude::*;
 
 #[error_code]
-pub enum ErrorCode{
+pub enum ErrorCode {
     #[msg("amount must be greater the zeor")]
     InvalidAmount,
-
+    
+    #[msg("invalid deadline provided")]
+    InvalidDeadline,
 }
