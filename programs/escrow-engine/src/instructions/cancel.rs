@@ -8,6 +8,7 @@ pub struct Cancel<'info> {
     pub maker: Signer<'info>,
     #[account(
        mut,
+       close=maker,
         seeds=[
             b"escrow",
             maker.key().as_ref(),
@@ -46,6 +47,7 @@ pub fn handler(ctx: Context<Cancel>) -> Result<()> {
 
     **escrow_info.try_borrow_mut_lamports()? -= escrow.amount;
     **maker_info.try_borrow_mut_lamports()? += escrow.amount;
+    
     escrow.status = EscrowStatus::Cancelled;
 
     Ok(())

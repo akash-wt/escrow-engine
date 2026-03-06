@@ -1,12 +1,12 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { EscrowEngine } from "../target/types/escrow_engine";
-import { PublicKey } from "@solana/web3.js";
+import { Keypair, PublicKey } from "@solana/web3.js";
 
 describe("escrow-engine", () => {
   const provider = anchor.AnchorProvider.env();
   anchor.setProvider(provider);
-  const receiver = provider.wallet.publicKey;
+  const receiver = Keypair.generate();
   const program = anchor.workspace.escrowEngine as Program<EscrowEngine>;
 
   it("Initialize_Escrow_test", async () => {
@@ -16,7 +16,7 @@ describe("escrow-engine", () => {
       Math.floor(Date.now() / 1000) + 60
     ); // 1 minute later
 
-    const tx = await program.methods.initializeEscrow(escrowId, receiver, amount, deadline, null).accounts(
+    const tx = await program.methods.initializeEscrow(escrowId, receiver.publicKey, amount, deadline, null).accounts(
       {
         maker: provider.wallet.publicKey,
       }
@@ -33,7 +33,6 @@ describe("escrow-engine", () => {
 
     const escrowAccount = await program.account.escrow.fetch(escrowPda);
 
-    console.log(escrowAccount);
 
     if (!escrowAccount.maker.equals(provider.wallet.publicKey)) {
       throw new Error("Maker not stored correctly");
@@ -66,12 +65,8 @@ describe("escrow-engine", () => {
       escrow: escrowPda
     }).rpc();
 
-    console.log("deposite tx: ", tx);
 
     const escrowAccount = await program.account.escrow.fetch(escrowPda);
-
-    console.log("after deposite escrowAccount", escrowAccount);
-
     if (!escrowAccount.maker.equals(provider.wallet.publicKey)) {
       throw new Error("Maker not stored correctly");
     }
@@ -103,22 +98,36 @@ describe("escrow-engine", () => {
       escrow: escrowPda
     }).rpc();
 
-    console.log("deposite tx: ", tx);
-
-    const escrowAccount = await program.account.escrow.fetch(escrowPda);
-
-    console.log("after deposite escrowAccount", escrowAccount);
-
-    if (!escrowAccount.maker.equals(provider.wallet.publicKey)) {
-      throw new Error("Maker not stored correctly");
+    const escrowAccount = await program.account.escrow.fetchNullable(escrowPda);
+    if (escrowAccount !== null) {
+      throw new Error("Escrow account should be closed");
     }
 
-    if (escrowAccount.escrowId.toNumber() !== 1) {
-      throw new Error("Escrow ID mismatch");
-    }
+  });
 
-    if (escrowAccount.status.cancelled === undefined) {
-      throw new Error("Escrow status should be funded");
+  it("claim_test", async () => {
+    const escrowId = new anchor.BN(1);
+
+    const [escrowPda] = PublicKey.findProgramAddressSync(
+      [
+        Buffer.from("escrow"),
+        provider.wallet.publicKey.toBuffer(),
+        escrowId.toArrayLike(Buffer, "le", 8),
+      ],
+      program.programId
+    );
+
+    const tx = await program.methods.claim().accounts({
+      receiver: receiver.publicKey,
+      escrow: escrowPda
+    })
+      .signers([receiver]).rpc();
+
+    const balance = await provider.connection.getBalance(receiver.publicKey);
+
+    const escrowAccount = await program.account.escrow.fetchNullable(escrowPda);
+    if (escrowAccount == null) {
+      throw new Error("Escrow account should be closed");
     }
 
   });

@@ -38,24 +38,10 @@ pub fn handler(ctx: Context<Claim>) -> Result<()> {
 
     escrow.status = EscrowStatus::Claimed;
 
-    let ix = anchor_lang::solana_program::system_instruction::transfer(
-        &escrow.key(),
-        &ctx.accounts.receiver.key(),
-        escrow.amount,
-    );
-    anchor_lang::solana_program::program::invoke_signed(
-        &ix,
-        &[
-            escrow.to_account_info(),
-            ctx.accounts.receiver.to_account_info(),
-        ],
-        &[&[
-            b"escrow",
-            escrow.maker.as_ref(),
-            &escrow.escrow_id.to_le_bytes(),
-            &[escrow.bump],
-        ]],
-    )?;
+    let escrow_info = escrow.to_account_info();
+    let receiver_info = ctx.accounts.receiver.to_account_info();
 
+    **escrow_info.try_borrow_mut_lamports()? -= escrow.amount;
+    **receiver_info.try_borrow_mut_lamports()? += escrow.amount;
     Ok(())
 }
