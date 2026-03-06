@@ -2,15 +2,18 @@ use anchor_lang::prelude::*;
 
 #[error_code]
 pub enum ErrorCode {
-    #[msg("Amount must be greater the zero!")]
+    #[msg("Escrow amount must be greater than zero.")]
     InvalidAmount,
 
-    #[msg("Invalid deadline provided!")]
+    #[msg("The provided deadline must be a future timestamp.")]
     InvalidDeadline,
 
-    #[msg("Invalid state of escrow!")]
+    #[msg("Escrow is in an invalid state for this operation.")]
     InvalidState,
 
-    #[msg("Unauthorized pubkey mismatch!")]
+    #[msg("Only the escrow maker is authorized to perform this action.")]
     InvalidMaker,
+
+    #[msg("The escrow deadline has already passed.")]
+    DeadlinePassed,
 }

@@ -1,5 +1,4 @@
 use crate::error::ErrorCode;
-use crate::instructions::deposit;
 use crate::state::{Escrow, EscrowStatus};
 use anchor_lang::prelude::*;
 
