@@ -20,6 +20,6 @@ pub enum ErrorCode {
     #[msg("The escrow amount only can receive receiver.")]
     Unauthorized,
 
-    #[msg("The escrow amount can not be withdraw before deadline")]
+    #[msg("The escrow amount can not be claimed before deadline")]
     BeforeDeadline,
 }

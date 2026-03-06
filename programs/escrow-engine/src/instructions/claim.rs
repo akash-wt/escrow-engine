@@ -20,7 +20,7 @@ pub struct Claim<'info> {
     pub system_program: Program<'info, System>,
 }
 
-fn handler(ctx: Context<Claim>) -> Result<()> {
+pub fn handler(ctx: Context<Claim>) -> Result<()> {
     let escrow = &mut ctx.accounts.escrow;
     let now = Clock::get()?.unix_timestamp;
 

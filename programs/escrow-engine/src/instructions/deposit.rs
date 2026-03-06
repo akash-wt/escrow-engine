@@ -19,7 +19,7 @@ pub struct Deposite<'info> {
     pub system_program: Program<'info, System>,
 }
 
-fn handler(ctx: Context<Deposite>) -> Result<()> {
+pub fn handler(ctx: Context<Deposite>) -> Result<()> {
     let escrow = &mut ctx.accounts.escrow;
     require!(
         escrow.status == EscrowStatus::Created,

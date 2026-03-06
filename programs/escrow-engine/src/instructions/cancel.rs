@@ -20,7 +20,7 @@ pub struct Cancel<'info> {
     pub system_program: Program<'info, System>,
 }
 
-fn handler(ctx: Context<Cancel>) -> Result<()> {
+pub fn handler(ctx: Context<Cancel>) -> Result<()> {
     let escrow = &mut ctx.accounts.escrow;
     let now = Clock::get()?.unix_timestamp;
 
