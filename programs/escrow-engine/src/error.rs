@@ -16,4 +16,10 @@ pub enum ErrorCode {
 
     #[msg("The escrow deadline has already passed.")]
     DeadlinePassed,
+
+    #[msg("The escrow amount only can receive receiver.")]
+    Unauthorized,
+
+    #[msg("The escrow amount can not be withdraw before deadline")]
+    BeforeDeadline,
 }
