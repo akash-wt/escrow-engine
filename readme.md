@@ -80,6 +80,3 @@ npm run dev
 - PDA-based account derivation
 - On-chain state validation
 
-## License
-
-ISC

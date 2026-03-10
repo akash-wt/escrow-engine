@@ -1,9 +1,7 @@
-pub mod init_escrow;
+pub mod create_escrow;
 pub mod claim;
-pub mod deposit;
 pub mod cancel;
 
-pub use init_escrow::*;
-pub use deposit::*;
+pub use create_escrow::*;
 pub use cancel::*;
 pub use claim::*;

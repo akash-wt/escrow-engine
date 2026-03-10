@@ -4,8 +4,7 @@ import { MyEscrows } from "@/components/methods/myEscrow";
 import Header from "@/components/style/header";
 import { C } from "@/components/style/variables";
 import { GradDivider } from "@/components/style/functions";
-import { InitEscrow } from "@/components/methods/initEscrow";
-import { Deposit } from "@/components/methods/deposite";
+import { CreateEscrow } from "@/components/methods/createEscrow";
 import { Claim } from "@/components/methods/claim";
 import { CancelInstruction } from "@/components/methods/cancel";
 import { Hero } from "@/components/style/hero";
@@ -74,8 +73,7 @@ export default function Home() {
             marginBottom: 80,
           }}
         >
-          <InitEscrow onDone={refresh} />
-          <Deposit onDone={refresh} />
+          <CreateEscrow onDone={refresh} />
           <Claim onDone={refresh} />
           <CancelInstruction onDone={refresh} />
         </div>

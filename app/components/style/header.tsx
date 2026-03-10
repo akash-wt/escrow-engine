@@ -3,8 +3,8 @@
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useEffect, useState } from "react";
 import { short } from "../utils";
-import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { C, NAV, SOL } from "./variables";
+import { WalletMultiButton } from "./WalletButton";
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);

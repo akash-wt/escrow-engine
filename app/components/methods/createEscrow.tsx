@@ -1,6 +1,6 @@
 "use client";
 import { useAnchorWallet } from "@solana/wallet-adapter-react";
-import { SystemProgram, PublicKey } from "@solana/web3.js";
+import { PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { BN } from "@coral-xyz/anchor";
 import { useState } from "react";
 import { useProgram } from "../hooks/useProgram";
@@ -8,15 +8,17 @@ import { TxStatus } from "../utils";
 import { Btn, Field, Panel, SHead, TxBox } from "../style/functions";
 import { C, SOL } from "../style/variables";
 
-export function InitEscrow({ onDone }: { onDone?: () => void }) {
+export function CreateEscrow({ onDone }: { onDone?: () => void }) {
   const program = useProgram();
   const wallet = useAnchorWallet();
+  const escrowId = Math.floor(Math.random() * 900000) + 100000;
+
   const [f, setF] = useState({
-    id: "",
     receiver: "",
     amount: "",
     deadline: "",
   });
+
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<TxStatus>(null);
   const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -29,23 +31,35 @@ export function InitEscrow({ onDone }: { onDone?: () => void }) {
         ok: false,
         msg: "Connect your wallet first.",
       });
+
     try {
       setLoading(true);
       setStatus(null);
+
+      const selected = new Date(f.deadline).getTime();
+      if (selected <= Date.now()) {
+        throw Error("Time must be set in future!");
+      }
+
+      const amountInLamports = Number(f.amount) * LAMPORTS_PER_SOL;
+      console.log(f);
+      console.log("amount in lamports", amountInLamports);
+
       const tx = await program.methods
-        .initializeEscrow(
-          new BN(f.id),
+        .createEscrow(
+          new BN(escrowId),
           new PublicKey(f.receiver),
-          new BN(f.amount),
+          new BN(amountInLamports),
           new BN(Math.floor(new Date(f.deadline).getTime() / 1000)),
           null,
         )
         .accounts({
           maker: wallet.publicKey,
-          systemProgram: SystemProgram.programId,
         })
         .rpc();
+
       setStatus({ sig: tx, ok: true, msg: "" });
+
       onDone?.();
     } catch (e: any) {
       setStatus({ sig: "", ok: false, msg: e.message });
@@ -58,7 +72,7 @@ export function InitEscrow({ onDone }: { onDone?: () => void }) {
     <Panel accent="gradient" id="init">
       <SHead
         n="instruction · 01"
-        title="Initialize Escrow"
+        title="Create Escrow"
         accent={SOL.green}
       />
       <p
@@ -80,21 +94,15 @@ export function InitEscrow({ onDone }: { onDone?: () => void }) {
         }}
       >
         <Field
-          label="Escrow ID"
-          placeholder="e.g. 1001"
-          value={f.id}
-          onChange={set("id")}
-        />
-        <Field
-          label="Amount (lamports)"
-          placeholder="e.g. 1000000000"
+          label="Amount (sol)"
+          placeholder="e.g. 0.5"
           value={f.amount}
           onChange={set("amount")}
         />
       </div>
       <Field
         label="Receiver Public Key"
-        placeholder="Base58 address…"
+        placeholder="address…"
         value={f.receiver}
         onChange={set("receiver")}
       />
@@ -102,10 +110,14 @@ export function InitEscrow({ onDone }: { onDone?: () => void }) {
         label="Deadline"
         type="datetime-local"
         value={f.deadline}
+        min={new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
+          .toISOString()
+          .slice(0, 19)}
+        step={1}
         onChange={set("deadline")}
       />
       <Btn variant="green" size="lg" full loading={loading} onClick={run}>
-        Initialize Escrow
+        Create Escrow
       </Btn>
       <TxBox status={status} />
     </Panel>

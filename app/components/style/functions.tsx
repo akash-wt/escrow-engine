@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { C, SOL, STATUS } from "./variables";
-import { addrUrl, short, TxStatus } from "../utils";
+import { addrUrl, short, TxStatus, txUrl } from "../utils";
 import { useAnchorWallet, useWallet } from "@solana/wallet-adapter-react";
 import { useProgram } from "../hooks/useProgram";
 import { SystemProgram } from "@solana/web3.js";
@@ -513,10 +513,12 @@ export function Panel({
   children,
   accent = "purple",
   style,
+  id,
 }: {
   children: React.ReactNode;
   accent?: "purple" | "cyan" | "green" | "red" | "gradient";
   style?: React.CSSProperties;
+  id?: string;
 }) {
   const topColors: Record<string, string> = {
     purple: SOL.purple,
@@ -527,6 +529,7 @@ export function Panel({
   };
   return (
     <div
+      id={id}
       style={{
         background: C.card,
         border: `1px solid ${C.border}`,
@@ -534,7 +537,6 @@ export function Panel({
         backgroundImage: `linear-gradient(${C.card},${C.card}),${topColors[accent]}`,
         backgroundOrigin: "border-box",
         backgroundClip: "padding-box,border-box",
-        // simpler fallback – just set border-top colour
         borderTopColor:
           accent === "gradient" ? "transparent" : topColors[accent],
         padding: 28,
@@ -593,5 +595,3 @@ export function Field({
     </div>
   );
 }
-
-

@@ -14,7 +14,7 @@ export function useProgram() {
     const provider = new AnchorProvider(connection, wallet, {});
     setProvider(provider);
 
-    return new Program(idl as EscrowEngine, { connection });
+    return new Program(idl as EscrowEngine);
   }, [connection, wallet]);
 
   return program;

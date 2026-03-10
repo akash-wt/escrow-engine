@@ -10,7 +10,8 @@ use anchor_lang::prelude::*;
     deadline: i64,
     mint: Option<Pubkey>,
 )]
-pub struct InitializeEscrow<'info> {
+
+pub struct CreateEscrow<'info> {
     #[account(mut)]
     pub maker: Signer<'info>,
     #[account(
@@ -29,7 +30,7 @@ pub struct InitializeEscrow<'info> {
 }
 
 pub fn handler(
-    ctx: Context<InitializeEscrow>,
+    ctx: Context<CreateEscrow>,
     escrow_id: u64,
     reciver: Pubkey,
     amount: u64,
@@ -44,12 +45,25 @@ pub fn handler(
 
     escrow.maker = ctx.accounts.maker.key();
     escrow.reciver = reciver; 
-    escrow.mint =mint;
+    escrow.mint = mint;
     escrow.amount = amount;
     escrow.deadline = deadline;
     escrow.escrow_id = escrow_id;
     escrow.bump = ctx.bumps.escrow;
-    escrow.status = EscrowStatus::Created;
+
+    let ix = anchor_lang::solana_program::system_instruction::transfer(
+        &ctx.accounts.maker.key(),
+        &escrow.key(),
+        amount,
+    );
+    anchor_lang::solana_program::program::invoke(
+        &ix,
+        &[
+            ctx.accounts.maker.to_account_info(),
+            escrow.to_account_info(),
+        ],
+    )?;
+    escrow.status = EscrowStatus::Funded;
 
     msg!("account creted succussfully!");
     Ok(())

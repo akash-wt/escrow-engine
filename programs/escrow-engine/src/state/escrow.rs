@@ -29,7 +29,6 @@ impl Escrow {
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Eq, InitSpace)]
 pub enum EscrowStatus {
-    Created,
     Funded,
     Claimed,
     Cancelled,

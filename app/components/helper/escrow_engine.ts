@@ -121,69 +121,16 @@ export type EscrowEngine = {
             "args": []
         },
         {
-            "name": "deposite",
+            "name": "createEscrow",
             "discriminator": [
-                118,
-                208,
-                149,
-                217,
-                247,
-                221,
-                23,
-                107
-            ],
-            "accounts": [
-                {
-                    "name": "maker",
-                    "writable": true,
-                    "signer": true
-                },
-                {
-                    "name": "escrow",
-                    "writable": true,
-                    "pda": {
-                        "seeds": [
-                            {
-                                "kind": "const",
-                                "value": [
-                                    101,
-                                    115,
-                                    99,
-                                    114,
-                                    111,
-                                    119
-                                ]
-                            },
-                            {
-                                "kind": "account",
-                                "path": "maker"
-                            },
-                            {
-                                "kind": "account",
-                                "path": "escrow.escrow_id",
-                                "account": "escrow"
-                            }
-                        ]
-                    }
-                },
-                {
-                    "name": "systemProgram",
-                    "address": "11111111111111111111111111111111"
-                }
-            ],
-            "args": []
-        },
-        {
-            "name": "initializeEscrow",
-            "discriminator": [
-                243,
-                160,
-                77,
-                153,
-                11,
-                92,
-                48,
-                209
+                253,
+                215,
+                165,
+                116,
+                36,
+                108,
+                68,
+                80
             ],
             "accounts": [
                 {
@@ -353,9 +300,6 @@ export type EscrowEngine = {
             "type": {
                 "kind": "enum",
                 "variants": [
-                    {
-                        "name": "created"
-                    },
                     {
                         "name": "funded"
                     },
