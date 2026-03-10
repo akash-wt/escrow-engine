@@ -3,22 +3,23 @@ import { useAnchorWallet } from "@solana/wallet-adapter-react";
 import { SystemProgram } from "@solana/web3.js";
 import { useState } from "react";
 import { useProgram } from "../hooks/useProgram";
+import { TxStatus } from "../utils";
+import { Btn, Note, Panel, SHead, TxBox } from "../style/functions";
+import { SOL } from "../style/variables";
 
-export default function Claim({ onDone }: { onDone?: () => void }) {
+export function Claim({ onDone }: { onDone?: () => void }) {
   const program = useProgram();
   const wallet = useAnchorWallet();
   const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState<{
-    ok: boolean;
-    msg: string;
-    sig: string;
-  } | null>(null);
+  const [status, setStatus] = useState<TxStatus>(null);
 
   const run = async () => {
-    if (!program || !wallet) {
-      setStatus({ ok: false, sig: "", msg: "Connect your wallet first." });
-      return;
-    }
+    if (!program || !wallet)
+      return setStatus({
+        sig: "",
+        ok: false,
+        msg: "Connect your wallet first.",
+      });
     try {
       setLoading(true);
       setStatus(null);
@@ -39,63 +40,16 @@ export default function Claim({ onDone }: { onDone?: () => void }) {
   };
 
   return (
-    <div
-      id="claim"
-      className="rounded-2xl border border-white/10 bg-gradient-to-br from-[#130d1f] to-[#0d0814] p-6 flex flex-col gap-5 shadow-xl shadow-black/40"
-    >
-      {/* Header */}
-      <div className="flex flex-col gap-1">
-        <span className="text-[11px] font-mono tracking-widest text-purple-400/60 uppercase">
-          instruction · 03
-        </span>
-        <h2 className="text-xl font-semibold text-purple-400 tracking-tight">
-          Claim
-        </h2>
-      </div>
-
-      {/* Info note */}
-      <div className="flex gap-3 rounded-xl bg-purple-400/10 border border-purple-400/20 px-4 py-3">
-        <span className="text-purple-400 mt-0.5 text-sm">ℹ</span>
-        <p className="text-sm text-purple-300/70 leading-relaxed">
-          Only the receiver specified at initialization can claim. The escrow
-          deadline must have already passed.
-        </p>
-      </div>
-
-      <button
-        onClick={run}
-        disabled={loading || !program || !wallet}
-        className="w-full py-3 rounded-xl bg-purple-500 text-white font-semibold text-sm tracking-wide
-          hover:bg-purple-400 active:scale-[0.98] transition-all duration-150
-          disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-purple-500
-          flex items-center justify-center gap-2"
-      >
-        {loading && (
-          <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-        )}
-        {loading ? "Claiming..." : "Claim Funds"}
-      </button>
-
-      {status && (
-        <div
-          className={`rounded-xl p-4 text-sm font-mono border ${
-            status.ok
-              ? "bg-purple-400/10 border-purple-400/20 text-purple-400"
-              : "bg-red-500/10 border-red-500/20 text-red-400"
-          }`}
-        >
-          {status.ok ? (
-            <div className="flex flex-col gap-1">
-              <span className="font-semibold">✓ Funds claimed</span>
-              <span className="text-[11px] text-white/40 break-all">
-                {status.sig}
-              </span>
-            </div>
-          ) : (
-            <span>✗ {status.msg}</span>
-          )}
-        </div>
-      )}
-    </div>
+    <Panel accent="purple" id="claim">
+      <SHead n="instruction · 03" title="Claim" accent={SOL.purple} />
+      <Note color={SOL.purple} icon="ℹ">
+        Only the receiver specified at initialization can claim. The escrow
+        deadline must have already passed.
+      </Note>
+      <Btn variant="purple" size="lg" full loading={loading} onClick={run}>
+        Claim Funds
+      </Btn>
+      <TxBox status={status} />
+    </Panel>
   );
 }

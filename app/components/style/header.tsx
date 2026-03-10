@@ -6,7 +6,7 @@ import { short } from "../utils";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { C, NAV, SOL } from "./variables";
 
-export default function useHeader() {
+export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const { publicKey } = useWallet();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -18,7 +18,7 @@ export default function useHeader() {
   }, []);
 
   return (
-    <header
+    <div
       style={{
         position: "fixed",
         top: 0,
@@ -188,6 +188,6 @@ export default function useHeader() {
           )}
         </div>
       )}
-    </header>
+    </div>
   );
 }

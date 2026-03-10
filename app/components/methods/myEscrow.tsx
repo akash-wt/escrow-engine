@@ -1,7 +1,11 @@
 "use client";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useProgram } from "../hooks/useProgram";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { C, SOL } from "../style/variables";
+import { Btn, Empty, EscrowCard } from "../style/functions";
+
+type Fil = "all" | "created" | "funded" | "claimed" | "cancelled";
 
 export function MyEscrows({ rk }: { rk: number }) {
   const program = useProgram();
