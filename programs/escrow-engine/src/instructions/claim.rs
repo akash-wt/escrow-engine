@@ -38,10 +38,6 @@ pub fn handler(ctx: Context<Claim>) -> Result<()> {
 
     escrow.status = EscrowStatus::Claimed;
 
-    let escrow_info = escrow.to_account_info();
-    let receiver_info = ctx.accounts.receiver.to_account_info();
-
-    **escrow_info.try_borrow_mut_lamports()? -= escrow.amount;
-    **receiver_info.try_borrow_mut_lamports()? += escrow.amount;
+ 
     Ok(())
 }

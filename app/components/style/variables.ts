@@ -13,10 +13,7 @@ export const C = {
 
 export const NAV = [
     { label: "My Escrows", href: "#my-escrows" },
-    { label: "Initialize", href: "#init" },
-    { label: "Deposit", href: "#deposit" },
-    { label: "Claim", href: "#claim" },
-    { label: "Cancel", href: "#cancel" },
+    { label: "Create", href: "#create" },
 ];
 
 export const SOL = {

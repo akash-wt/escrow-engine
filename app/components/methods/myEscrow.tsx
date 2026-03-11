@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { C, SOL } from "../style/variables";
 import { Btn, Empty, EscrowCard } from "../style/functions";
 
-type Fil = "all" | "created" | "funded" | "claimed" | "cancelled";
+type Fil = "all" | "funded" | "to_claim";
 
 export function MyEscrows({ rk }: { rk: number }) {
   const program = useProgram();
@@ -19,11 +19,25 @@ export function MyEscrows({ rk }: { rk: number }) {
     if (!program || !publicKey) return;
     try {
       setLoading(true);
-      const all = await (program.account as any).escrow.all([
+
+      const asMaker = await (program.account as any).escrow.all([
         { memcmp: { offset: 8, bytes: publicKey.toBase58() } },
       ]);
+
+      const asReceiver = await (program.account as any).escrow.all([
+        { memcmp: { offset: 8 + 32, bytes: publicKey.toBase58() } },
+      ]);
+
+      const seen = new Set<string>();
+      const all = [...asMaker, ...asReceiver].filter((e) => {
+        const key = e.publicKey.toBase58();
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+
       all.sort(
-        (a: any, b: any) =>
+        (a, b) =>
           b.account.escrowId.toNumber() - a.account.escrowId.toNumber(),
       );
       setEscrows(all);
@@ -38,21 +52,36 @@ export function MyEscrows({ rk }: { rk: number }) {
     load();
   }, [load, rk, tick]);
 
+  const now = Math.floor(Date.now() / 1000);
+
   const TABS: { k: Fil; label: string; color: string }[] = [
     { k: "all", label: "All", color: C.dimFg },
-    { k: "created", label: "Created", color: SOL.cyan },
     { k: "funded", label: "Funded", color: SOL.green },
-    { k: "claimed", label: "Claimed", color: SOL.purple },
-    { k: "cancelled", label: "Cancelled", color: "#ef4444" },
+    { k: "to_claim", label: "To Claim", color: SOL.purple },
   ];
 
-  const cnt = (k: Fil) =>
-    k === "all"
-      ? escrows.length
-      : escrows.filter((e) => Object.keys(e.account.status)[0] === k).length;
+  const cnt = (k: Fil) => {
+    if (k === "all") return escrows.length;
+    if (k === "to_claim")
+      return escrows.filter(
+        (e) =>
+          e.account.reciver.toBase58() === publicKey?.toBase58() &&
+          Object.keys(e.account.status)[0] === "funded" &&
+          e.account.deadline.toNumber() <= now,
+      ).length;
+    return escrows.filter((e) => Object.keys(e.account.status)[0] === k).length;
+  };
+
   const shown =
     fil === "all"
       ? escrows
+      : fil === "to_claim"
+      ? escrows.filter(
+          (e) =>
+            e.account.reciver.toBase58() === publicKey?.toBase58() &&
+            Object.keys(e.account.status)[0] === "funded" &&
+            e.account.deadline.toNumber() <= now,
+        )
       : escrows.filter((e) => Object.keys(e.account.status)[0] === fil);
 
   return (
@@ -89,7 +118,7 @@ export function MyEscrows({ rk }: { rk: number }) {
               lineHeight: 1,
             }}
           >
-            My Escrows
+            Manage Escrows
           </h2>
         </div>
         <Btn

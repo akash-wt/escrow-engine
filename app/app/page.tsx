@@ -5,8 +5,6 @@ import Header from "@/components/style/header";
 import { C } from "@/components/style/variables";
 import { GradDivider } from "@/components/style/functions";
 import { CreateEscrow } from "@/components/methods/createEscrow";
-import { Claim } from "@/components/methods/claim";
-import { CancelInstruction } from "@/components/methods/cancel";
 import { Hero } from "@/components/style/hero";
 import { Footer } from "@/components/style/footer";
 
@@ -74,8 +72,6 @@ export default function Home() {
           }}
         >
           <CreateEscrow onDone={refresh} />
-          <Claim onDone={refresh} />
-          <CancelInstruction onDone={refresh} />
         </div>
       </main>
 

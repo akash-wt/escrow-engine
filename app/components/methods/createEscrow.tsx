@@ -11,7 +11,7 @@ import { C, SOL } from "../style/variables";
 export function CreateEscrow({ onDone }: { onDone?: () => void }) {
   const program = useProgram();
   const wallet = useAnchorWallet();
-  const escrowId = Math.floor(Math.random() * 900000) + 100000;
+  const escrowId = new BN(Date.now() + Math.floor(Math.random() * 1000));
 
   const [f, setF] = useState({
     receiver: "",
@@ -69,12 +69,8 @@ export function CreateEscrow({ onDone }: { onDone?: () => void }) {
   };
 
   return (
-    <Panel accent="gradient" id="init">
-      <SHead
-        n="instruction · 01"
-        title="Create Escrow"
-        accent={SOL.green}
-      />
+    <Panel accent="gradient" id="create">
+      <SHead n="instruction · 01" title="Create Escrow" accent={SOL.green} />
       <p
         style={{
           color: C.mutedFg,
@@ -84,7 +80,7 @@ export function CreateEscrow({ onDone }: { onDone?: () => void }) {
         }}
       >
         Create a new on-chain escrow account. Define the receiver public key,
-        SOL amount in lamports, and a future unlock deadline.
+        SOL amount , and a future unlock deadline.
       </p>
       <div
         style={{

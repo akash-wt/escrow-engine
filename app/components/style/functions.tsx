@@ -5,7 +5,8 @@ import { C, SOL, STATUS } from "./variables";
 import { addrUrl, short, TxStatus, txUrl } from "../utils";
 import { useAnchorWallet, useWallet } from "@solana/wallet-adapter-react";
 import { useProgram } from "../hooks/useProgram";
-import { SystemProgram } from "@solana/web3.js";
+import { PublicKey } from "@solana/web3.js";
+import { BN } from "bn.js";
 
 type BtnVariant = "purple" | "cyan" | "green" | "red" | "ghost";
 export function Btn({
@@ -297,32 +298,81 @@ export function EscrowCard({
   const [open, setOpen] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [cancelSt, setCancelSt] = useState<TxStatus>(null);
+  const [claiming, setClaiming] = useState(false); // 👈 add
+  const [claimSt, setClaimSt] = useState<TxStatus>(null); // 👈 add
 
   const statusKey = Object.keys(escrow.account.status)[0];
   const isMaker = publicKey?.toBase58() === escrow.account.maker.toBase58();
+  const isReceiver =
+    publicKey?.toBase58() === escrow.account.reciver.toBase58(); // 👈 add
   const isActive = statusKey === "created" || statusKey === "funded";
   const deadline = new Date(escrow.account.deadline.toNumber() * 1000);
   const sol = (escrow.account.amount.toNumber() / 1e9).toFixed(4);
   const isPast = Date.now() > deadline.getTime();
+  const escrowId = escrow.account.escrowId.toString();
 
   const doCancel = async () => {
     if (!program || !wallet) return;
     try {
       setCancelling(true);
       setCancelSt(null);
+      if (new Date(Date.now()) > deadline) {
+        throw new Error(
+          "Deadline has passed. You can only cancel escrow before the deadline.",
+        );
+      }
+      if (!publicKey) throw new Error("Connect your wallet to cancel escrow!");
+
+      const [escrowPda] = PublicKey.findProgramAddressSync(
+        [
+          Buffer.from("escrow"),
+          publicKey.toBuffer(),
+          new BN(escrowId).toArrayLike(Buffer, "le", 8),
+        ],
+        program.programId,
+      );
+
       const tx = await program.methods
         .cancel()
-        .accounts({
-          maker: wallet.publicKey,
-          systemProgram: SystemProgram.programId,
-        })
+        .accounts({ maker: wallet.publicKey, escrow: escrowPda })
         .rpc();
+
       setCancelSt({ sig: tx, ok: true, msg: "" });
       onAction();
     } catch (e: any) {
       setCancelSt({ sig: "", ok: false, msg: e.message });
     } finally {
       setCancelling(false);
+    }
+  };
+
+
+  const doClaim = async () => {
+    if (!program || !wallet || !publicKey) return;
+    try {
+      setClaiming(true);
+      setClaimSt(null);
+
+      const [escrowPda] = PublicKey.findProgramAddressSync(
+        [
+          Buffer.from("escrow"),
+          escrow.account.maker.toBuffer(), 
+          new BN(escrowId).toArrayLike(Buffer, "le", 8),
+        ],
+        program.programId,
+      );
+
+      const tx = await program.methods
+        .claim()
+        .accounts({ receiver: wallet.publicKey, escrow: escrowPda })
+        .rpc();
+
+      setClaimSt({ sig: tx, ok: true, msg: "" });
+      onAction();
+    } catch (e: any) {
+      setClaimSt({ sig: "", ok: false, msg: e.message });
+    } finally {
+      setClaiming(false);
     }
   };
 
@@ -337,7 +387,7 @@ export function EscrowCard({
         background: open ? "#0c0c0c" : C.surface,
       }}
     >
-      {/* header row */}
+      {/* header row — unchanged */}
       <div
         onClick={() => setOpen((x) => !x)}
         style={{
@@ -349,7 +399,6 @@ export function EscrowCard({
           flexWrap: "wrap",
         }}
       >
-        {/* id */}
         <span
           style={{
             fontSize: 11,
@@ -360,7 +409,6 @@ export function EscrowCard({
         >
           #{escrow.account.escrowId.toString()}
         </span>
-        {/* status + amount */}
         <div
           style={{
             display: "flex",
@@ -377,7 +425,6 @@ export function EscrowCard({
             → {short(escrow.account.reciver.toBase58())}
           </span>
         </div>
-        {/* deadline */}
         <span
           style={{
             fontSize: 11,
@@ -388,14 +435,12 @@ export function EscrowCard({
         >
           {deadline.toLocaleDateString()}
         </span>
-        {/* address */}
         <span
           style={{ fontSize: 11, color: C.muted, flexShrink: 0 }}
           className="hide-sm"
         >
           {short(escrow.publicKey.toBase58())}
         </span>
-        {/* chevron */}
         <span
           style={{
             color: C.muted,
@@ -410,7 +455,6 @@ export function EscrowCard({
         </span>
       </div>
 
-      {/* expanded detail */}
       {open && (
         <div
           className="fu"
@@ -420,7 +464,6 @@ export function EscrowCard({
             background: "#080808",
           }}
         >
-          {/* gradient accent bar */}
           <div
             style={{
               height: 1,
@@ -489,18 +532,59 @@ export function EscrowCard({
             ))}
           </div>
 
+          {/* maker actions */}
           {isMaker && isActive && (
             <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 16 }}>
               <Lbl>Actions</Lbl>
-              <Btn
-                variant="red"
-                size="sm"
-                loading={cancelling}
-                onClick={doCancel}
-              >
-                Cancel Escrow
-              </Btn>
+              {isPast ? (
+                <Btn
+                  disabled
+                  variant="ghost"
+                  size="sm"
+                  loading={cancelling}
+                  onClick={doCancel}
+                >
+                  Cancel Escrow
+                </Btn>
+              ) : (
+                <Btn
+                  variant="red"
+                  size="sm"
+                  loading={cancelling}
+                  onClick={doCancel}
+                >
+                  Cancel Escrow
+                </Btn>
+              )}
               <TxBox status={cancelSt} />
+            </div>
+          )}
+
+          {/* 👇 receiver claim action */}
+          {isReceiver && isActive && (
+            <div
+              style={{
+                borderTop: `1px solid ${C.border}`,
+                paddingTop: 16,
+                marginTop: isMaker ? 12 : 0,
+              }}
+            >
+              <Lbl>Claim</Lbl>
+              {!isPast ? (
+                <Btn disabled variant="ghost" size="sm">
+                  ⏳ Claimable after {deadline.toLocaleString()}
+                </Btn>
+              ) : (
+                <Btn
+                  variant="purple"
+                  size="sm"
+                  loading={claiming}
+                  onClick={doClaim}
+                >
+                  Claim {sol} SOL
+                </Btn>
+              )}
+              <TxBox status={claimSt} />
             </div>
           )}
         </div>

@@ -9,14 +9,14 @@ describe("escrow-engine", () => {
   const receiver = Keypair.generate();
   const program = anchor.workspace.escrowEngine as Program<EscrowEngine>;
 
-  it("Initialize_Escrow_test", async () => {
+  it("Escrow_test", async () => {
     const escrowId = new anchor.BN(1);
     const amount = new anchor.BN(1_000_000_000); // 1 SOL
     const deadline = new anchor.BN(
       Math.floor(Date.now() / 1000) + 60
     ); // 1 minute later
 
-    const tx = await program.methods.initializeEscrow(escrowId, receiver.publicKey, amount, deadline, null).accounts(
+    const tx = await program.methods.createEscrow(escrowId, receiver.publicKey, amount, deadline, null).accounts(
       {
         maker: provider.wallet.publicKey,
       }
@@ -33,40 +33,6 @@ describe("escrow-engine", () => {
 
     const escrowAccount = await program.account.escrow.fetch(escrowPda);
 
-
-    if (!escrowAccount.maker.equals(provider.wallet.publicKey)) {
-      throw new Error("Maker not stored correctly");
-    }
-
-    if (escrowAccount.escrowId.toNumber() !== 1) {
-      throw new Error("Escrow ID mismatch");
-    }
-
-    if (escrowAccount.status.created === undefined) {
-      throw new Error("Escrow status incorrect");
-    }
-
-  });
-
-  it("Deposite_test", async () => {
-    const escrowId = new anchor.BN(1);
-
-    const [escrowPda] = PublicKey.findProgramAddressSync(
-      [
-        Buffer.from("escrow"),
-        provider.wallet.publicKey.toBuffer(),
-        escrowId.toArrayLike(Buffer, "le", 8),
-      ],
-      program.programId
-    );
-
-    const tx = await program.methods.deposite().accounts({
-      maker: provider.wallet.publicKey,
-      escrow: escrowPda
-    }).rpc();
-
-
-    const escrowAccount = await program.account.escrow.fetch(escrowPda);
     if (!escrowAccount.maker.equals(provider.wallet.publicKey)) {
       throw new Error("Maker not stored correctly");
     }
@@ -76,10 +42,11 @@ describe("escrow-engine", () => {
     }
 
     if (escrowAccount.status.funded === undefined) {
-      throw new Error("Escrow status should be funded");
+      throw new Error("Escrow status incorrect");
     }
 
   });
+
 
   it("cancel_test", async () => {
     const escrowId = new anchor.BN(1);
@@ -132,3 +99,4 @@ describe("escrow-engine", () => {
 
   });
 });
+
